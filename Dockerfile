@@ -12,6 +12,6 @@ RUN ["mvn", "dependency:resolve"]
 
 # Adding source, compile and package into a fat jar
 ADD src /code/src
-RUN ["mvn", "clean install"]
+RUN ["mvn", "install"]
 EXPOSE 8061
 CMD ["/usr/lib/jvm/java-8-openjdk-amd64/bin/java", "-jar", "target/hello-world-app-0.0.1-SNAPSHOT.jar"]
