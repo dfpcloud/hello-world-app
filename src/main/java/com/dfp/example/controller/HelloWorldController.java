@@ -10,8 +10,11 @@ public class HelloWorldController {
     @RequestMapping("/")
     public String helloServer() {
 
-        return "Hello!! Greetings from DFP. You have successfully deployed your first Spring boot application with DFP cloud platform!\n" +
-                "      You can modify the code in this repository to build your app.";
+        return "{\n" +
+                "\"msg\": \"Hello!! Greetings from DFP. You have successfully deployed your first Spring boot application on DFP cloud platform!. Modify the source code in this repository to build your application.\",\n" +
+                "\"version\":\"v1.0\",\n" +
+                "\"service\":\"server\"\n" +
+                "}";
     }
 
 }
