@@ -1,18 +1,23 @@
-FROM openjdk:8-jre-alpine
+FROM alpine:3.9
+USER root
 
-ENV APP_HOME /var/app
-ENV LOG ${APP_HOME}/logs
-ENV DATA_PATH_FILES ${APP_HOME}/dataFiles
-ENV RESOURCES ${APP_HOME}/resources
+# /dev/urandom is used as random source, which is perfectly safe
+# according to http://www.2uo.de/myths-about-urandom/
+RUN apk add --update \
+    curl \
+    openjdk8=8.201.08-r1 \
+ && rm /var/cache/apk/* \
+ && echo "securerandom.source=file:/dev/urandom" >> /usr/lib/jvm/default-jvm/jre/lib/security/java.security
 
-RUN apk update
-RUN mkdir -p "$APP_HOME"
-RUN mkdir -p "${LOG}"
-RUN mkdir -p "${DATA_PATH_FILES}"
-RUN mkdir -p "${RESOURCES}"
+# Install maven
+RUN apk add maven
+WORKDIR /code
 
-ADD *.jar app.jar
-RUN sh -c 'touch /app.jar'
-ENV JAVA_OPTS=""
-EXPOSE 8080
-ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Dlogging.file=${LOG}/cip.log -Djava.security.egd=file:/dev/./urandom -jar /app.jar" ]
+# Prepare by downloading dependencies
+ADD pom.xml /code/pom.xml
+
+# Adding source, compile and package into a fat jar
+ADD src /code/src
+RUN ["mvn", "install"]
+ADD ./target/*.jar app.jar
+ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /app.jar" ]
