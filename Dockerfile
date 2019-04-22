@@ -1,17 +1,18 @@
-FROM java:8 
-# Install maven
-RUN apt-get update
-RUN apt-get install -y maven
+FROM openjdk:8-jre-alpine
 
-WORKDIR /code
+ENV APP_HOME /var/app
+ENV LOG ${APP_HOME}/logs
+ENV DATA_PATH_FILES ${APP_HOME}/dataFiles
+ENV RESOURCES ${APP_HOME}/resources
 
-# Prepare by downloading dependencies
-ADD pom.xml /code/pom.xml
-RUN ["mvn", "dependency:resolve"]
+RUN apk update
+RUN mkdir -p "$APP_HOME"
+RUN mkdir -p "${LOG}"
+RUN mkdir -p "${DATA_PATH_FILES}"
+RUN mkdir -p "${RESOURCES}"
 
-# Adding source, compile and package into a fat jar
-ADD src /code/src
-RUN ["mvn", "install"]
+ADD *.jar app.jar
+RUN sh -c 'touch /app.jar'
+ENV JAVA_OPTS=""
 EXPOSE 8080
-CMD ["/usr/lib/jvm/java-8-openjdk-amd64/bin/java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "target/hello-world-app-0.0.1-SNAPSHOT.jar"]
-
+ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Dlogging.file=${LOG}/cip.log -Djava.security.egd=file:/dev/./urandom -jar /app.jar" ]
